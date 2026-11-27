@@ -3,13 +3,14 @@ set -e
 
 COMFY_DIR="/opt/ComfyUI"
 DATASET_DIR="/kaggle/input/comfyui-assets"
+JOBS_DIR="/kaggle/input/comfyui-jobs"
 OUTPUT_DIR="/kaggle/working/outputs"
 
 mkdir -p "$OUTPUT_DIR"
 
 if [ -d "$DATASET_DIR/models" ]; then
     echo "[INFO] Linking persistent models from Kaggle Dataset..."
-    for folder in checkpoints vae loras controlnet animatediff_models upscale_models; do
+    for folder in checkpoints vae loras controlnet animatediff_models upscale_models diffusion_models text_encoders clip; do
         source="$DATASET_DIR/models/$folder"
         target="$COMFY_DIR/models/$folder"
         if [ -d "$source" ]; then
@@ -21,10 +22,14 @@ if [ -d "$DATASET_DIR/models" ]; then
     done
 fi
 
-if [ -f "$DATASET_DIR/workflow_api.json" ]; then
-    cp "$DATASET_DIR/workflow_api.json" "$COMFY_DIR/workflow_api.json"
-fi
-if [ -f "$DATASET_DIR/prompts_queue.json" ]; then
+for workflow in workflow_api.json workflow_image_to_image_api.json workflow_image_to_video_api.json workflow_text_to_video_api.json; do
+    if [ -f "$DATASET_DIR/$workflow" ]; then
+        cp "$DATASET_DIR/$workflow" "$COMFY_DIR/$workflow"
+    fi
+done
+if [ -f "$JOBS_DIR/prompts_queue.json" ]; then
+    cp "$JOBS_DIR/prompts_queue.json" "$COMFY_DIR/prompts_queue.json"
+elif [ -f "$DATASET_DIR/prompts_queue.json" ]; then
     cp "$DATASET_DIR/prompts_queue.json" "$COMFY_DIR/prompts_queue.json"
 fi
 
